@@ -1,3 +1,4 @@
+// Sine testbench - unchanged from the original
 `timescale 10ns/10ns
 `include "sine.sv"
 
