@@ -15,6 +15,7 @@ module processor_tb;
     initial begin
         $dumpfile("processor.vcd");
         $dumpvars(1, u0);
+        $dumpvars(0, u0.registers);
         #10000
         $finish;
     end

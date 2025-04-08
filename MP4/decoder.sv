@@ -1,5 +1,6 @@
 module decoder (
     input [31:0] instruction, // Instruction input
+    input clk,
     output logic [2:0] funct3, // Function code for ALU operation
     output logic [6:0] funct7, // Function code for ALU operation
     output logic [31:0] imm,   // Immediate value
@@ -9,8 +10,6 @@ module decoder (
     output logic [6:0] opcode // Opcode for instruction type
 );
 
-    // Extract opcode
-    assign opcode = instruction[6:0];
     // Determine instruction type
     logic R;
     logic I;
@@ -18,6 +17,9 @@ module decoder (
     logic B;
     logic U;
     logic J;
+    
+    // Extract opcode   
+    assign opcode = instruction[6:0];
     assign R = (opcode == 7'b0110011); // R-type instructions
     assign I = (opcode == 7'b0000011) || (opcode == 7'b0010011) || (opcode == 7'b1100111); // Load, ALU immediate, JALR
     assign S = (opcode == 7'b0100011); // Store instructions
@@ -32,8 +34,7 @@ module decoder (
     assign rs1 = ~(U || J)  ? instruction[19:15] : 5'b00000;
     assign rs2 = (R || S || B) ? instruction[24:20] : 5'b00000;
     assign rd = ~(S || B) ? instruction[11:7] : 5'b00000;
-    // Extract immediate value based on opcode
-    always_comb begin
+    always @(negedge clk) begin
         case (opcode)
             // I type immediate
             7'b0000011: imm = {{20{instruction[31]}}, instruction[31:20]}; // Load instructions
