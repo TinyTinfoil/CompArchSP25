@@ -1,5 +1,6 @@
 filename = processor
 pcf_file = ../common/iceBlinkPico.pcf
+memfile = blinkytest.txt
 
 build:
 	yosys -p "synth_ice40 -top top -json $(filename).json -spram" $(filename).sv

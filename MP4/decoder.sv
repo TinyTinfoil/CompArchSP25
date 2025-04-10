@@ -29,7 +29,7 @@ module decoder (
     // funct3 not used in U type and J type instructions
     assign funct3 = ~(U || J) ? instruction[14:12] : 3'b000;
     // funct7 only used in R type instructions
-    assign funct7 = R ? instruction[31:25] : 7'b0000000;
+    assign funct7 = (R || I) ? instruction[31:25] : 7'b0000000;
     // Extract rs1, rs2, and rd
     assign rs1 = ~(U || J)  ? instruction[19:15] : 5'b00000;
     assign rs2 = (R || S || B) ? instruction[24:20] : 5'b00000;

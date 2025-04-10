@@ -1,4 +1,4 @@
-`include "memory.sv"
+`include "memory_alt.sv"
 `include "decoder.sv"
 `include "ALU.sv"
 `include "registers.sv"
@@ -22,14 +22,14 @@ logic [4:0] rd;
 logic [6:0] opcode;
 logic write_enable;
 logic [4:0] addr;
-logic [31:0] data;
 logic mem_write_enable;
 logic [2:0] mem_funct3;
 logic [31:0] mem_write_address;
 logic [31:0] mem_write_data;
 logic [31:0] mem_read_address;
 logic [31:0] mem_read_data;
-memory #(.INIT_FILE("rv32i_test.txt")) mem (
+parameter mem_file = "rv32i_test";
+memory #(.INIT_FILE(mem_file)) mem (
     .clk(clk),
     .write_mem(mem_write_enable),
     .funct3(mem_funct3),
@@ -48,6 +48,7 @@ assign RGB_B = ~RGB_B_n;
 assign LED = ~LED_n;
 logic [31:0] rd1;
 logic [31:0] rd2;
+logic [31:0] data;
 registers registers (
     .read_addr1(rs1),   // Read address
     .read_addr2(rs2),   // Read address
@@ -58,15 +59,11 @@ registers registers (
     .read_data2(rd2),  // Data read
     .clk(clk)
 );
-logic [31:0] op1;
-logic [31:0] op2;
-logic [31:0] res;
 logic [31:0] op1_alu;
 logic [31:0] op2_alu;
 logic [31:0] res_alu;
 
 ALU alu (
-    .clk(clk),
     .A(op1_alu),          // First 32-bit input
     .B(op2_alu),          // Second 32-bit input
     .funct3(funct3),
@@ -87,9 +84,11 @@ decoder d (
 );
 logic flag;
 logic flag_cmp;
+logic [31:0] cmp_op1;
+logic [31:0] cmp_op2;
 compare cmp (
-    .A(op1),
-    .B(op2),
+    .A(cmp_op1),
+    .B(cmp_op2),
     .funct3(funct3),
     .flag(flag_cmp)
 );
@@ -104,9 +103,15 @@ initial begin
     mem_write_enable = 0;
     mem_write_data = 0;
     flag = 0;
-    op1 = 0;
-    op2 = 0;
+    op1_alu = 0;
+    op2_alu = 0;
+    cmp_op1 = 0;
+    cmp_op2 = 0;
     stage = 0;
+    read_addr1 = 0;
+    read_addr2 = 0;
+    read_data1 = 0;
+    read_data2 = 0;
 end
 
 always_ff @( posedge clk ) begin
@@ -152,8 +157,8 @@ always_ff @( posedge clk ) begin
             end
             // B-type branch instructions
             7'b1100011: begin
-                op1_alu <= rd1;
-                op2_alu <= rd2;
+                cmp_op1 <= rd1;
+                cmp_op2 <= rd2;
             end
             // U-type lui
             7'b0110111: begin
