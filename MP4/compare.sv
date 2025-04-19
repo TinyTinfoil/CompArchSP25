@@ -7,12 +7,12 @@ module compare(
 );
     always_comb begin
         case (funct3)
-            3'b000: flag = (A == B); // Equal
-            3'b001: flag = (A != B); // Not equal
-            3'b010: flag = (A < B);  // Less than
-            3'b011: flag = (A >= B); // Greater than or equal to
-            3'b100: flag = (A > B);  // Greater than
-            3'b101: flag = (A <= B); // Less than or equal to
+            3'h0: flag = (A == B); // Equal
+            3'h1: flag = (A != B); // Not equal
+            3'h4: flag = ($signed(A) < $signed(B));  // Less than
+            3'h5: flag = ($signed(A) >= $signed(B)); // Greater than or equal to
+            3'h6: flag = (A < B);  // Less than (unsigned)
+            3'h7: flag = (A >= B); // Greater than or equal to (unsigned)
             default: flag = 1'b0;    // Default case
         endcase
     end

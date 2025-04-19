@@ -12,7 +12,6 @@ module top (
 );
 logic [31:0] PC;
 logic [31:0] PC_next;
-logic [31:0] instruction;
 logic [2:0] funct3;
 logic [6:0] funct7;
 logic [31:0] imm;
@@ -92,14 +91,15 @@ compare cmp (
     .funct3(funct3),
     .flag(flag_cmp)
 );
-logic [4:0] stage;
+logic [2:0] stage;
 initial begin
     PC = 0;
     PC_next = 0;
-    instruction = 0;
     write_enable = 0;
     addr = 0;
     data = 0;
+    mem_read_address = 0;
+    mem_write_address = 0;
     mem_write_enable = 0;
     mem_write_data = 0;
     flag = 0;
@@ -108,30 +108,18 @@ initial begin
     cmp_op1 = 0;
     cmp_op2 = 0;
     stage = 0;
-    read_addr1 = 0;
-    read_addr2 = 0;
-    read_data1 = 0;
-    read_data2 = 0;
+    instruction_in = 0;
+    mem_funct3 = 0;
 end
 
 always_ff @( posedge clk ) begin
     case (stage)
     0: begin
-        mem_funct3 <= 3'b010;
-        mem_read_address <= PC;
-        mem_write_address <= 0;
-    end
-    1 : begin
-    end
-    2: begin
         // Fetch
         PC_next <= PC + 4;
-        instruction <= mem_read_data; // Read instruction from memory
+        instruction_in <= mem_read_data; // Pass instruction to decoder
     end
-    3: begin
-        instruction_in <= instruction; // Pass instruction to decoder
-    end
-    4: begin
+    1: begin
         // load register data to operands
         case (opcode)
             // R-type instructions
@@ -160,6 +148,14 @@ always_ff @( posedge clk ) begin
                 cmp_op1 <= rd1;
                 cmp_op2 <= rd2;
             end
+            // J-type jal
+            7'b1101111: begin
+                data <= PC_next;
+            end
+            // I type jalr
+            7'b1100111: begin
+                data <= PC_next;
+            end
             // U-type lui
             7'b0110111: begin
                 data <= imm;
@@ -168,29 +164,25 @@ always_ff @( posedge clk ) begin
             7'b0010111: begin
                 data <= PC + imm;
             end
-            // J-type jal
-            7'b1101111: begin
-                data <= PC_next;
-            end
-            // I type jalr
-            7'b1100111: begin
-                data <= PC_next;
-            end
         endcase
     end
-    5: begin 
+    2: begin 
         // load register data from devices
         case (opcode)
             // R-type instructions
             7'b0110011: begin
                 data <= res_alu; // Result from ALU
+                write_enable <= 1; // Enable write to register file
             end
             // I-type alu instructions
             7'b0010011: begin
                 data <= res_alu; // Result from ALU
+                write_enable <= 1; // Enable write to register file
             end
             // I-type load instructions
             7'b0000011: begin
+                data <= mem_read_data; // Load data from memory
+                write_enable <= 1; // Enable write to register file
             end
             // S-type store instructions
             7'b0100011: begin
@@ -198,104 +190,43 @@ always_ff @( posedge clk ) begin
             end
             // B-type branch instructions
             7'b1100011: begin
-                flag <= flag_cmp; // Set the flag based on comparison
-            end
-            // U-type lui
-            7'b0110111: begin
-            end
-            // U type auipc
-            7'b0010111: begin
-                PC_next <= data;
+                if (flag_cmp) begin
+                    PC_next <= PC + imm;
+                end
             end
             // J-type jal
             7'b1101111: begin
                 PC_next <= PC + imm;
+                write_enable <= 1;
             end
             // I type jalr
             7'b1100111: begin
                 PC_next <= rd1 + imm;
+                write_enable <= 1;
             end
-        endcase
-    end
-    6: begin
-        case (opcode)
-            // R-type instructions
-            7'b0110011: begin
-                write_enable <= 1; // Enable write to register file
-            end
-            // I-type alu instructions
-            7'b0010011: begin
-                write_enable <= 1; // Enable write to register file
-            end
-            // I-type load instructions
-            7'b0000011: begin
-                write_enable <= 1; // Enable write to register file
-            end
-            // S-type store instructions
-            7'b0100011: begin
-                mem_write_enable <= 1;
-            end
-            // B-type branch instructions
-            7'b1100011: begin
-                flag <= flag_cmp; // Set the flag based on comparison
-            end
-            // U-type lui
+             // U-type lui
             7'b0110111: begin
                 write_enable <= 1;
             end
             // U type auipc
             7'b0010111: begin
-                write_enable <= 1;
-            end
-            // J-type jal
-            7'b1101111: begin
-                write_enable <= 1;
-            end
-            // I type jalr
-            7'b1100111: begin
+                PC_next <= data;
                 write_enable <= 1;
             end
         endcase
     end
-    
-    7: begin
-        // Write back
-        case (opcode)
-        // I type load instructions
-        7'b0000011: begin
-            write_enable <= 1;
-        end
-        // B-type branch instructions
-        7'b1100011: begin
-            if (flag) begin
-                PC_next <= PC + imm;
-            end
-        end
-        endcase
-    end
-    8: begin
-        case (opcode)
-         // I type load instructions
-        7'b0000011: begin
-            write_enable <= 1;
-        end
-        endcase
-    end
-    9: begin
+    3: begin
+        // Update PC
         write_enable <= 0;
         mem_write_enable <= 0;
-    end
-    10: begin
-        // Update PC
         PC <= PC_next;
+        mem_funct3 <= 3'b010;
+        mem_read_address <= PC_next;
+        mem_write_address <= 0;
     end
-    default
-        begin
-            // Default case to handle unexpected stages
-            stage <= 0;
-        end
     endcase
     // Increment stage for next clock cycle
-    stage <= (stage + 1) % 11;
+    stage <= stage + 1;
 end
+
 endmodule

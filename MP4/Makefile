@@ -16,7 +16,6 @@ clean:
 sim:
 	iverilog -g2012 -o $(filename).tb $(filename)_tb.sv
 	vvp $(filename).tb
-	"C:\Users\veswaranandam.MILKYWAY\OneDrive - Olin College of Engineering\Documents\Spring 2025\Comp Arch\oss-cad-suite\environment.bat"
 	gtkwave $(filename).vcd
 
 sim-refresh:
@@ -26,6 +25,17 @@ sim-refresh:
 tb-alu:
 	iverilog -g2012 -o ALU.tb ALU_tb.sv
 	vvp ALU.tb
+
+tb-compare:
+	iverilog -g2012 -o compare.tb compare_tb.sv
+	vvp compare.tb
+
+sim-post:
+	yosys -p "read_json $(filename).json; write_verilog $(filename)_syn.v"
+	iverilog -g2012 -o $(filename)_syn.tb $(filename)_syn.sv 'yosys-config --datdir/ice40/cells_sim.v'
+
+pnr-gui:
+	nextpnr-ice40 --json $(filename).json --pcf $(pcf_file) --asc $(filename).asc --gui
 # compile:
 # 	riscv64-unknown-elf-gcc code.c -c -march=rv32i -mabi=ilp32
 # 	riscv64-unknown-elf-objcopy --change-address 0x00000 -O ihex code.o code.hex

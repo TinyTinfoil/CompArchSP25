@@ -10,7 +10,7 @@ module processor_tb;
     logic RGB_B;
     logic LED;
 
-    top u0 (clk, RGB_R, RGB_G, RGB_B);
+    top u0 (clk, RGB_R, RGB_G, RGB_B, LED);
 
     initial begin
         $dumpfile("processor.vcd");
