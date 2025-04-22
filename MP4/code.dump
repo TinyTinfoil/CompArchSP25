@@ -1,0 +1,18 @@
+
+code.o:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <.text>:
+   0:	00400093          	li	ra,4
+   4:	00408167          	jalr	sp,4(ra)
+   8:	fff00193          	li	gp,-1
+   c:	05000313          	li	t1,80
+  10:	00018023          	sb	zero,0(gp)
+  14:	00018203          	lb	tp,0(gp)
+  18:	01420293          	addi	t0,tp,20 # 14 <.text+0x14>
+  1c:	00518023          	sb	t0,0(gp)
+  20:	00627463          	bgeu	tp,t1,28 <.text+0x28>
+  24:	0000006f          	j	24 <.text+0x24>
+  28:	0000006f          	j	28 <.text+0x28>

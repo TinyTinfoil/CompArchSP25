@@ -1,13 +1,13 @@
 module decoder (
     input [31:0] instruction, // Instruction input
-    input clk,
     output logic [2:0] funct3, // Function code for ALU operation
     output logic [6:0] funct7, // Function code for ALU operation
     output logic [31:0] imm,   // Immediate value
     output logic [4:0] rs1,    // Source register 1
     output logic [4:0] rs2,    // Source register 2
     output logic [4:0] rd,      // Destination register
-    output logic [6:0] opcode // Opcode for instruction type
+    output logic [6:0] opcode, // Opcode for instruction type
+    input logic clk // Clock signal
 );
 
     // Determine instruction type
@@ -34,7 +34,7 @@ module decoder (
     assign rs1 = ~(U || J)  ? instruction[19:15] : 5'b00000;
     assign rs2 = (R || S || B) ? instruction[24:20] : 5'b00000;
     assign rd = ~(S || B) ? instruction[11:7] : 5'b00000;
-    always @(negedge clk) begin
+    always @(*) begin
         case (opcode)
             // I type immediate
             7'b0000011: imm = {{20{instruction[31]}}, instruction[31:20]}; // Load instructions

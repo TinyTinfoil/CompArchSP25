@@ -1,4 +1,13 @@
 MEMORY
 {
-    RAM (xrw) : ORIGIN = 0x000000000, LENGTH = 0x0000008000
+   BRAM (RWX) : ORIGIN = 0x00000000, LENGTH = 0x00001FFF
+}
+SECTIONS
+{
+    everything :
+    {
+	. = ALIGN(4);
+	code.o (.text)
+        *(.*)
+    } >BRAM
 }

@@ -1,6 +1,5 @@
 filename = processor
 pcf_file = ../common/iceBlinkPico.pcf
-memfile = blinkytest.txt
 
 build:
 	yosys -p "synth_ice40 -top top -json $(filename).json -spram" $(filename).sv
@@ -30,12 +29,27 @@ tb-compare:
 	iverilog -g2012 -o compare.tb compare_tb.sv
 	vvp compare.tb
 
+tb-decoder:
+	iverilog -g2012 -o decoder.tb decoder_tb.sv
+	vvp decoder.tb
+
 sim-post:
 	yosys -p "read_json $(filename).json; write_verilog $(filename)_syn.v"
-	iverilog -g2012 -o $(filename)_syn.tb $(filename)_syn.sv 'yosys-config --datdir/ice40/cells_sim.v'
+	iverilog -g2012 -o $(filename)_syn.tb $(filename)_syn.v /usr/share/yosys/ice40/cells_sim.v
 
 pnr-gui:
 	nextpnr-ice40 --json $(filename).json --pcf $(pcf_file) --asc $(filename).asc --gui
-# compile:
-# 	riscv64-unknown-elf-gcc code.c -c -march=rv32i -mabi=ilp32
-# 	riscv64-unknown-elf-objcopy --change-address 0x00000 -O ihex code.o code.hex
+
+compile:
+	riscv64-unknown-elf-gcc -march=rv32i -mabi=ilp32 -nostartfiles -o code.o -c code.c
+	riscv64-unknown-elf-objcopy -d verilog code.o code.bin --verilog-data-width 4
+	python3 pad_memhfile.py code.bin
+	python3 split_memhfile.py code.txt
+	riscv64-unknown-elf-objdump -d code.o > code.dump #for debugging
+
+compile-asm:
+	riscv64-unknown-elf-gcc -march=rv32i -mabi=ilp32 -nostartfiles -o code.o -c code.S
+	riscv64-unknown-elf-objcopy -d verilog code.o code.bin --verilog-data-width 4
+	python3 pad_memhfile.py code.bin
+	python3 split_memhfile.py code.txt
+	riscv64-unknown-elf-objdump -d code.o > code.dump #for debugging

@@ -15,8 +15,9 @@ module ALU_tb;
     logic [2:0] funct3;
     logic [6:0] funct7;
     logic [31:0] Result;  
-
-    ALU u0 (A, B, funct3, funct7, Result); // Instantiate the ALU
+    logic clk; // Clock signal
+    
+    ALU u0 (A, B, funct3, funct7, Result,clk); // Instantiate the ALU
 
     initial begin
         // Test case 1: ADD
@@ -106,8 +107,10 @@ module ALU_tb;
         #10;
         `assert(Result, 32'd0, "SLTU");
         #10;
-
         $finish;
     end
-
+    always begin
+        #4
+        clk = ~clk;
+    end
 endmodule

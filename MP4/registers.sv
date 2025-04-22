@@ -34,6 +34,7 @@ module registers (
         read_data2 = (read_addr2 == 5'd0) ? 32'd0 : registers[read_addr2];
     end
     
+//For iverilog in order to see the registers in gtkwave
 logic [31:0] reg1;
 assign reg1 = registers[1];
 logic [31:0] reg2;

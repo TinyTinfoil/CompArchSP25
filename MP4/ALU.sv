@@ -3,7 +3,8 @@ module ALU (
     input  logic [31:0] B,          // Second 32-bit input
     input  logic [2:0] funct3,
     input logic [6:0] funct7,
-    output logic [31:0] Result     // 32-bit result
+    output logic [31:0] Result,    // 32-bit result
+    input logic clk // Clock signal
 );
 
     // ALU Operations
@@ -17,7 +18,7 @@ module ALU (
     // funct3 = 3, sltu a and b
     // funct3 = 5, srl a and b
     // funct3 = 5, funct7 = 0x20 sra a and b
-    always @(*) begin
+    always_comb begin
         case (funct3)
             3'b000: Result = (funct7 == 7'h20) ? A - B : A + B; // ADD or SUB
             3'b100: Result = A ^ B;                            // XOR

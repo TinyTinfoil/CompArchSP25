@@ -47,7 +47,7 @@ module memory #(
     logic [3:0] micros_counter = 4'd0;
 
     // Declare memory array for 8kB of actual memory
-    (* ram_style = "block" *) logic [31:0] memory [0:2047];
+    logic [31:0] memory [0:2047];
 
     // Declare variables to save the two LSBs of the read address and funct3
     logic read_address0;
@@ -73,7 +73,7 @@ module memory #(
     // Initialize memory array
     initial begin
         if (INIT_FILE) begin
-            $readmemh(INIT_FILE, memory);
+            $readmemh(INIT_FILE, memory, 0, 2047);
         end
         else begin
             for (i = 0; i < 2048; i++) begin

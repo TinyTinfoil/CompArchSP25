@@ -1,4 +1,4 @@
-`include "memory_alt.sv"
+`include "memory.sv"
 `include "decoder.sv"
 `include "ALU.sv"
 `include "registers.sv"
@@ -27,7 +27,7 @@ logic [31:0] mem_write_address;
 logic [31:0] mem_write_data;
 logic [31:0] mem_read_address;
 logic [31:0] mem_read_data;
-parameter mem_file = "rv32i_test";
+parameter mem_file = "rv32i_test.txt";
 memory #(.INIT_FILE(mem_file)) mem (
     .clk(clk),
     .write_mem(mem_write_enable),
@@ -67,7 +67,8 @@ ALU alu (
     .B(op2_alu),          // Second 32-bit input
     .funct3(funct3),
     .funct7(funct7),
-    .Result(res_alu)                // 32-bit result
+    .Result(res_alu),                // 32-bit result
+    .clk(clk) // Clock signal
 );
 logic [31:0] instruction_in;
 decoder d (
@@ -91,7 +92,7 @@ compare cmp (
     .funct3(funct3),
     .flag(flag_cmp)
 );
-logic [2:0] stage;
+logic [3:0] stage;
 initial begin
     PC = 0;
     PC_next = 0;
@@ -108,18 +109,27 @@ initial begin
     cmp_op1 = 0;
     cmp_op2 = 0;
     stage = 0;
-    instruction_in = 0;
     mem_funct3 = 0;
+    instruction_in = 0;
 end
 
 always_ff @( posedge clk ) begin
     case (stage)
     0: begin
         // Fetch
+        mem_funct3 <= 3'b010;
+        mem_read_address <= PC; // Read instruction from memory
         PC_next <= PC + 4;
-        instruction_in <= mem_read_data; // Pass instruction to decoder
     end
     1: begin
+        // Decode
+        instruction_in <= mem_read_data; // Pass instruction to decoder
+    end
+    2: begin
+        // Wait for decoder/memory
+    end
+    3: begin
+        // Execute
         // load register data to operands
         case (opcode)
             // R-type instructions
@@ -150,11 +160,11 @@ always_ff @( posedge clk ) begin
             end
             // J-type jal
             7'b1101111: begin
-                data <= PC_next;
+                data <= PC_next - 4; // since first instruction load is junk, PC counter drifts ahead by 4
             end
             // I type jalr
             7'b1100111: begin
-                data <= PC_next;
+                data <= PC_next - 4;
             end
             // U-type lui
             7'b0110111: begin
@@ -162,12 +172,13 @@ always_ff @( posedge clk ) begin
             end
             // U type auipc
             7'b0010111: begin
-                data <= PC + imm;
+                data <= PC + imm - 4; 
             end
         endcase
     end
-    2: begin 
-        // load register data from devices
+    4: begin 
+        // Writeback
+        // Read register data from modules
         case (opcode)
             // R-type instructions
             7'b0110011: begin
@@ -181,7 +192,23 @@ always_ff @( posedge clk ) begin
             end
             // I-type load instructions
             7'b0000011: begin
-                data <= mem_read_data; // Load data from memory
+                case (funct3)
+                    3'b000: begin
+                        data <= {{24{mem_read_data[7]}}, mem_read_data[7:0]}; // Load byte
+                    end
+                    3'b001: begin
+                        data <= {{16{mem_read_data[15]}}, mem_read_data[15:0]}; // Load halfword
+                    end
+                    3'b010: begin
+                        data <= mem_read_data; // Load word
+                    end
+                    3'b100: begin
+                        data <= {{24{1'b0}}, mem_read_data[7:0]}; // Load byte unsigned
+                    end
+                    3'b101: begin
+                        data <= {{16{1'b0}}, mem_read_data[15:0]}; // Load halfword unsigned
+                    end
+                endcase
                 write_enable <= 1; // Enable write to register file
             end
             // S-type store instructions
@@ -191,17 +218,17 @@ always_ff @( posedge clk ) begin
             // B-type branch instructions
             7'b1100011: begin
                 if (flag_cmp) begin
-                    PC_next <= PC + imm;
+                    PC_next <= PC + $signed(imm);
                 end
             end
             // J-type jal
             7'b1101111: begin
-                PC_next <= PC + imm;
+                PC_next <= PC + $signed(imm);
                 write_enable <= 1;
             end
             // I type jalr
             7'b1100111: begin
-                PC_next <= rd1 + imm;
+                PC_next <= rd1 + $signed(imm);
                 write_enable <= 1;
             end
              // U-type lui
@@ -215,18 +242,21 @@ always_ff @( posedge clk ) begin
             end
         endcase
     end
-    3: begin
-        // Update PC
+    5: begin
+        // Update PC and close writes
         write_enable <= 0;
         mem_write_enable <= 0;
         PC <= PC_next;
-        mem_funct3 <= 3'b010;
-        mem_read_address <= PC_next;
         mem_write_address <= 0;
+        mem_funct3 <= 3'b010;
+        mem_read_address <= PC;
     end
     endcase
     // Increment stage for next clock cycle
     stage <= stage + 1;
+    if (stage == 6) begin
+        stage <= 0; // Reset stage to 0 after completing the cycle
+    end
 end
 
 endmodule
