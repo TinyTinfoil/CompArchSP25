@@ -83,7 +83,7 @@ module memory #(
     end
 
     // Handle memory reads
-    always_ff @(posedge clk or negedge clk) begin
+    always_ff @(negedge clk) begin
         read_address1 <= read_address[1];
         read_address0 <= read_address[0];
         read_word <= funct3[1];
@@ -161,7 +161,7 @@ module memory #(
     end
 
     // Handle memory writes
-    always_ff @(posedge clk or negedge clk) begin
+    always_ff @(posedge clk) begin
         if (write_mem) begin
             if (write_address[31:13] == 19'd0) begin
                 if (funct3[1]) begin

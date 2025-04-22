@@ -18,7 +18,7 @@ module ALU (
     // funct3 = 3, sltu a and b
     // funct3 = 5, srl a and b
     // funct3 = 5, funct7 = 0x20 sra a and b
-    always_comb begin
+    always @(*) begin
         case (funct3)
             3'b000: Result = (funct7 == 7'h20) ? A - B : A + B; // ADD or SUB
             3'b100: Result = A ^ B;                            // XOR

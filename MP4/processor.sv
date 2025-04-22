@@ -27,7 +27,7 @@ logic [31:0] mem_write_address;
 logic [31:0] mem_write_data;
 logic [31:0] mem_read_address;
 logic [31:0] mem_read_data;
-parameter mem_file = "blink_led.txt";
+parameter mem_file = "code.txt";
 memory #(.INIT_FILE(mem_file)) mem (
     .clk(clk),
     .write_mem(mem_write_enable),
@@ -99,148 +99,144 @@ initial begin
     write_enable = 0;
     addr = 0;
     data = 0;
-    mem_read_address = 0;
-    mem_write_address = 0;
-    mem_write_enable = 0;
-    mem_write_data = 0;
     flag = 0;
     op1_alu = 0;
     op2_alu = 0;
     cmp_op1 = 0;
     cmp_op2 = 0;
     stage = 0;
-    mem_funct3 = 0;
     instruction_in = 0;
+    startup = 0;
 end
-
+logic [3:0]startup = 0;
 always_ff @( posedge clk ) begin
-    case (stage)
-    0: begin
-        // Fetch
-        mem_funct3 <= 3'b010;
-        mem_read_address <= PC; // Read instruction from memory
-        PC_next <= PC + 4;
-    end
-    1: begin
-        // Decode
-        instruction_in <= mem_read_data; // Pass instruction to decoder
-    end
-    2: begin
-        // Wait for decoder/memory
-    end
-    3: begin
-        // Execute
-        // load register data to operands
-        case (opcode)
-            // R-type instructions
-            7'b0110011: begin
-                op1_alu <= rd1; // Read data from rs1 into alu
-                op2_alu <= rd2; // Read data from rs2
-            end
-            // I-type alu instructions
-            7'b0010011: begin
-                op1_alu <= rd1; // Read data from rs1
-                op2_alu <= imm; // Immediate value
-            end
-            // I-type load instructions
-            7'b0000011: begin
-                mem_funct3 <= funct3;
-                mem_read_address <= rd1 + imm; // Use rs1 value
-            end
-            // S-type store instructions
-            7'b0100011: begin
-                mem_funct3 <= funct3;
-                mem_write_address <= rd1 + imm;
-                mem_write_data <= rd2;
-            end
-            // B-type branch instructions
-            7'b1100011: begin
-                cmp_op1 <= rd1;
-                cmp_op2 <= rd2;
-            end
-            // J-type jal
-            7'b1101111: begin
-                data <= PC_next - 4; // since first instruction load is junk, PC counter drifts ahead by 4
-            end
-            // I type jalr
-            7'b1100111: begin
-                data <= PC_next - 4;
-            end
-            // U-type lui
-            7'b0110111: begin
-                data <= imm;
-            end
-            // U type auipc
-            7'b0010111: begin
-                data <= PC + imm - 4; 
-            end
-        endcase
-    end
-    4: begin 
-        // Writeback
-        // Read register data from modules
-        case (opcode)
-            // R-type instructions
-            7'b0110011: begin
-                data <= res_alu; // Result from ALU
-                write_enable <= 1; // Enable write to register file
-            end
-            // I-type alu instructions
-            7'b0010011: begin
-                data <= res_alu; // Result from ALU
-                write_enable <= 1; // Enable write to register file
-            end
-            // I-type load instructions
-            7'b0000011: begin
-                data <= mem_read_data; // Load word
-                write_enable <= 1; // Enable write to register file
-            end
-            // S-type store instructions
-            7'b0100011: begin
-                mem_write_enable <= 1;
-            end
-            // B-type branch instructions
-            7'b1100011: begin
-                if (flag_cmp) begin
-                    PC_next <= PC + $signed(imm);
+        case (stage)
+        0: begin
+            // Fetch
+            mem_funct3 <= 3'b010;
+            mem_read_address <= PC; // Read instruction from memory
+            PC_next <= PC + 4;
+        end
+        1: begin
+            // Decode
+            instruction_in <= mem_read_data; // Pass instruction to decoder
+        end
+        2: begin
+            // Wait for decoder/memory
+        end
+        3: begin
+            // Execute
+            // load register data to operands
+            case (opcode)
+                // R-type instructions
+                7'b0110011: begin
+                    op1_alu <= rd1; // Read data from rs1 into alu
+                    op2_alu <= rd2; // Read data from rs2
                 end
-            end
-            // J-type jal
-            7'b1101111: begin
-                PC_next <= PC + $signed(imm);
-                write_enable <= 1;
-            end
-            // I type jalr
-            7'b1100111: begin
-                PC_next <= rd1 + $signed(imm);
-                write_enable <= 1;
-            end
-             // U-type lui
-            7'b0110111: begin
-                write_enable <= 1;
-            end
-            // U type auipc
-            7'b0010111: begin
-                PC_next <= data;
-                write_enable <= 1;
-            end
+                // I-type alu instructions
+                7'b0010011: begin
+                    op1_alu <= rd1; // Read data from rs1
+                    op2_alu <= imm; // Immediate value
+                end
+                // I-type load instructions
+                7'b0000011: begin
+                    mem_funct3 <= funct3;
+                    mem_read_address <= rd1 + imm; // Use rs1 value
+                end
+                // S-type store instructions
+                7'b0100011: begin
+                    mem_funct3 <= funct3;
+                    mem_write_address <= rd1 + imm;
+                    mem_write_data <= rd2;
+                end
+                // B-type branch instructions
+                7'b1100011: begin
+                    cmp_op1 <= rd1;
+                    cmp_op2 <= rd2;
+                end
+                // J-type jal
+                7'b1101111: begin
+                    data <= PC_next; // since first instruction load is junk, PC counter drifts ahead by 4
+                end
+                // I type jalr
+                7'b1100111: begin
+                    data <= PC_next;
+                end
+                // U-type lui
+                7'b0110111: begin
+                    data <= imm;
+                end
+                // U type auipc
+                7'b0010111: begin
+                    data <= PC + imm; 
+                end
+            endcase
+        end
+        4: begin 
+            // Writeback
+            // Read register data from modules
+            case (opcode)
+                // R-type instructions
+                7'b0110011: begin
+                    data <= res_alu; // Result from ALU
+                    write_enable <= 1; // Enable write to register file
+                end
+                // I-type alu instructions
+                7'b0010011: begin
+                    data <= res_alu; // Result from ALU
+                    write_enable <= 1; // Enable write to register file
+                end
+                // I-type load instructions
+                7'b0000011: begin
+                    data <= mem_read_data; // Load word
+                    write_enable <= 1; // Enable write to register file
+                end
+                // S-type store instructions
+                7'b0100011: begin
+                    mem_write_enable <= 1;
+                end
+                // B-type branch instructions
+                7'b1100011: begin
+                    if (flag_cmp) begin
+                        PC_next <= PC + $signed(imm);
+                    end
+                end
+                // J-type jal
+                7'b1101111: begin
+                    PC_next <= PC + $signed(imm);
+                    write_enable <= 1;
+                end
+                // I type jalr
+                7'b1100111: begin
+                    PC_next <= rd1 + $signed(imm);
+                    write_enable <= 1;
+                end
+                    // U-type lui
+                7'b0110111: begin
+                    write_enable <= 1;
+                end
+                // U type auipc
+                7'b0010111: begin
+                    PC_next <= data;
+                    write_enable <= 1;
+                end
+            endcase
+        end
+        5: begin
+            // Update PC and close writes
+            write_enable <= 0;
+            mem_write_enable <= 0;
+            PC <= PC_next;
+            mem_write_address <= 0;
+            mem_funct3 <= 3'b010;
+            mem_read_address <= PC;
+        end
         endcase
-    end
-    5: begin
-        // Update PC and close writes
-        write_enable <= 0;
-        mem_write_enable <= 0;
-        PC <= PC_next;
-        mem_write_address <= 0;
-        mem_funct3 <= 3'b010;
-        mem_read_address <= PC;
-    end
-    endcase
-    // Increment stage for next clock cycle
-    stage <= stage + 1;
-    if (stage == 6) begin
-        stage <= 0; // Reset stage to 0 after completing the cycle
-    end
+        // Increment stage for next clock cycle
+        stage <= stage + 1;
+        if (stage == 6) begin
+            stage <= 0; // Reset stage to 0 after completing the cycle
+        end
 end
 
 endmodule
