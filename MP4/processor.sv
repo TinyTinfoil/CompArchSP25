@@ -27,7 +27,7 @@ logic [31:0] mem_write_address;
 logic [31:0] mem_write_data;
 logic [31:0] mem_read_address;
 logic [31:0] mem_read_data;
-parameter mem_file = "rv32i_test.txt";
+parameter mem_file = "blink_led.txt";
 memory #(.INIT_FILE(mem_file)) mem (
     .clk(clk),
     .write_mem(mem_write_enable),
@@ -192,23 +192,7 @@ always_ff @( posedge clk ) begin
             end
             // I-type load instructions
             7'b0000011: begin
-                case (funct3)
-                    3'b000: begin
-                        data <= {{24{mem_read_data[7]}}, mem_read_data[7:0]}; // Load byte
-                    end
-                    3'b001: begin
-                        data <= {{16{mem_read_data[15]}}, mem_read_data[15:0]}; // Load halfword
-                    end
-                    3'b010: begin
-                        data <= mem_read_data; // Load word
-                    end
-                    3'b100: begin
-                        data <= {{24{1'b0}}, mem_read_data[7:0]}; // Load byte unsigned
-                    end
-                    3'b101: begin
-                        data <= {{16{1'b0}}, mem_read_data[15:0]}; // Load halfword unsigned
-                    end
-                endcase
+                data <= mem_read_data; // Load word
                 write_enable <= 1; // Enable write to register file
             end
             // S-type store instructions

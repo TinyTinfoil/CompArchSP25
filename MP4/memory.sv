@@ -47,7 +47,7 @@ module memory #(
     logic [3:0] micros_counter = 4'd0;
 
     // Declare memory array for 8kB of actual memory
-    logic [31:0] memory [0:2047];
+    (* ram_style = "block" *) logic [31:0] memory [0:2047];
 
     // Declare variables to save the two LSBs of the read address and funct3
     logic read_address0;
@@ -83,7 +83,7 @@ module memory #(
     end
 
     // Handle memory reads
-    always_ff @(posedge clk) begin
+    always_ff @(posedge clk or negedge clk) begin
         read_address1 <= read_address[1];
         read_address0 <= read_address[0];
         read_word <= funct3[1];
@@ -161,7 +161,7 @@ module memory #(
     end
 
     // Handle memory writes
-    always_ff @(posedge clk) begin
+    always_ff @(posedge clk or negedge clk) begin
         if (write_mem) begin
             if (write_address[31:13] == 19'd0) begin
                 if (funct3[1]) begin
