@@ -1,5 +1,5 @@
 
-code.o:     file format elf32-littleriscv
+code/code.o:     file format elf32-littleriscv
 
 
 Disassembly of section .text:

@@ -6,13 +6,7 @@ int main() {
     int delta = 200;
     int t1 = 0;
     while (1){
-        if (*timer - t1 > delta){
-            t1 = *timer;
-            *LED += 60;
-            if (*LED > 0xFF) {
-                *LED = 0;
-            }
-        }
+        *LED = ~(*LED);
     }
     
 }

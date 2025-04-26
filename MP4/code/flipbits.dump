@@ -1,0 +1,26 @@
+
+code/flipbits.o:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <main>:
+   0:	fe010113          	addi	sp,sp,-32
+   4:	00812e23          	sw	s0,28(sp)
+   8:	02010413          	addi	s0,sp,32
+   c:	fff00793          	li	a5,-1
+  10:	fef42623          	sw	a5,-20(s0)
+  14:	ff800793          	li	a5,-8
+  18:	fef42423          	sw	a5,-24(s0)
+  1c:	0c800793          	li	a5,200
+  20:	fef42223          	sw	a5,-28(s0)
+  24:	fe042023          	sw	zero,-32(s0)
+
+00000028 <.L2>:
+  28:	fec42783          	lw	a5,-20(s0)
+  2c:	0007c783          	lbu	a5,0(a5)
+  30:	fff7c793          	not	a5,a5
+  34:	0ff7f713          	zext.b	a4,a5
+  38:	fec42783          	lw	a5,-20(s0)
+  3c:	00e78023          	sb	a4,0(a5)
+  40:	fe9ff06f          	j	28 <.L2>

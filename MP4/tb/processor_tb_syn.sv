@@ -1,6 +1,6 @@
 // Sine testbench - unchanged from the original
 `timescale 10ns/10ns
-`include "processor.sv"
+`include "processor_syn.v"
 
 module processor_tb;
 
@@ -15,7 +15,6 @@ module processor_tb;
     initial begin
         $dumpfile("processor.vcd");
         $dumpvars(1, u0);
-        $dumpvars(0, u0.registers);
         #10000
         $finish;
     end

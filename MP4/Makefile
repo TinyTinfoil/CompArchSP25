@@ -7,49 +7,49 @@ build:
 	icepack $(filename).asc $(filename).bin
 
 prog: #for sram
+	sudo chmod -R 777 /dev/bus/usb/ #for WSL
 	dfu-util --device 1d50:6146 --alt 0 -D $(filename).bin -R
 
 clean:
 	rm -rf $(filename).blif $(filename).asc $(filename).json $(filename).bin
 
-sim:
-	iverilog -g2012 -o $(filename).tb $(filename)_tb.sv
-	vvp $(filename).tb
-	gtkwave $(filename).vcd
+sim: sim-refresh
+	gtkwave tb/$(filename).vcd &
 
 sim-refresh:
-	iverilog -g2012 -o $(filename).tb $(filename)_tb.sv
-	vvp $(filename).tb
+	iverilog -g2012 -o tb/$(filename).tb tb/$(filename)_tb.sv
+	vvp tb/$(filename).tb
+	mv $(filename).vcd tb/$(filename).vcd
 
 tb-alu:
-	iverilog -g2012 -o ALU.tb ALU_tb.sv
-	vvp ALU.tb
+	iverilog -g2012 -o tb/ALU.tb tb/ALU_tb.sv
+	vvp tb/ALU.tb
 
 tb-compare:
-	iverilog -g2012 -o compare.tb compare_tb.sv
-	vvp compare.tb
+	iverilog -g2012 -o tb/compare.tb tb/compare_tb.sv
+	vvp tb/compare.tb
 
 tb-decoder:
-	iverilog -g2012 -o decoder.tb decoder_tb.sv
-	vvp decoder.tb
+	iverilog -g2012 -o tb/decoder.tb tb/decoder_tb.sv
+	vvp tb/decoder.tb
 
-sim-post:
+code = code.c
+code_file = $(notdir $(basename $(code)))
+
+compile:
+	riscv64-unknown-elf-gcc -march=rv32i -mabi=ilp32 -nostartfiles -o code/$(code_file).o -c code/$(code)
+	riscv64-unknown-elf-objcopy -d verilog code/$(code_file).o code/$(code_file).bin --verilog-data-width 4
+	python3 code/pad_memhfile.py code/$(code_file).bin
+	riscv64-unknown-elf-objdump -d code/$(code_file).o > code/$(code_file).dump #for debugging
+
+sim-post: sim-post-refresh
+	gtkwave tb/$(filename).vcd &
+
+sim-post-refresh:
 	yosys -p "read_json $(filename).json; write_verilog $(filename)_syn.v"
-	iverilog -g2012 -o $(filename)_syn.tb $(filename)_syn.v /usr/share/yosys/ice40/cells_sim.v
+	iverilog -g2012 -o tb/$(filename)_syn.tb tb/$(filename)_tb_syn.sv /usr/share/yosys/ice40/cells_sim.v
+	vvp tb/$(filename)_syn.tb
+	mv $(filename).vcd tb/$(filename).vcd
 
 pnr-gui:
 	nextpnr-ice40 --json $(filename).json --pcf $(pcf_file) --asc $(filename).asc --gui
-
-compile:
-	riscv64-unknown-elf-gcc -march=rv32i -mabi=ilp32 -nostartfiles -o code.o -c code.c
-	riscv64-unknown-elf-objcopy -d verilog code.o code.bin --verilog-data-width 4
-	python3 pad_memhfile.py code.bin
-	python3 split_memhfile.py code.txt
-	riscv64-unknown-elf-objdump -d code.o > code.dump #for debugging
-
-compile-asm:
-	riscv64-unknown-elf-gcc -march=rv32i -mabi=ilp32 -nostartfiles -o code.o -c code.S
-	riscv64-unknown-elf-objcopy -d verilog code.o code.bin --verilog-data-width 4
-	python3 pad_memhfile.py code.bin
-	python3 split_memhfile.py code.txt
-	riscv64-unknown-elf-objdump -d code.o > code.dump #for debugging
