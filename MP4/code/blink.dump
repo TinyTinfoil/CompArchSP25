@@ -8,7 +8,7 @@ Disassembly of section .text:
    0:	fe010113          	addi	sp,sp,-32
    4:	00812e23          	sw	s0,28(sp)
    8:	02010413          	addi	s0,sp,32
-   c:	ffe00793          	li	a5,-2
+   c:	ffc00793          	li	a5,-4
   10:	fef42423          	sw	a5,-24(s0)
   14:	ff800793          	li	a5,-8
   18:	fef42223          	sw	a5,-28(s0)

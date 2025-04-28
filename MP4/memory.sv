@@ -32,7 +32,8 @@ module memory #(
     output logic    led,            // Active-high PWM output for user LED
     output logic    red,            // Active-high PWM output for red LED
     output logic    green,          // Active-high PWM output for green LED
-    output logic    blue            // Active-high PWM output for blue LED
+    output logic    blue,            // Active-high PWM output for blue LED
+    output logic mem_busy        // Memory busy
 );
 
     logic [31:0] read_value = 32'd0;
@@ -80,8 +81,8 @@ module memory #(
                 memory[i] = 32'd0;
             end
         end
+        mem_busy = 0;
     end
-
     // Handle memory reads
     always_ff @(negedge clk) begin
         read_address1 <= read_address[1];

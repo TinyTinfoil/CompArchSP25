@@ -1,7 +1,7 @@
 int main() {
     unsigned char* LED;
     unsigned int* timer;
-    LED = (unsigned char*)0xFFFFFFFE; // user
+    LED = (unsigned char*)0xFFFFFFFC; // user
     timer = (unsigned int*)0xFFFFFFF8;
     int delta = 200;
     int t1 = 0;

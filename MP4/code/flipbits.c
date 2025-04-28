@@ -1,3 +1,4 @@
+__asm__("addi x2, x0, 0x7FF\n\t");
 int main() {
     unsigned char* LED;
     unsigned int* timer;

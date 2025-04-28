@@ -5,7 +5,7 @@ code/store_test.o:     file format elf32-littleriscv
 Disassembly of section .text:
 
 00000000 <.text>:
-   0:	fff00093          	li	ra,-1
+   0:	00f00093          	li	ra,15
    4:	00008103          	lb	sp,0(ra)
    8:	01e00193          	li	gp,30
    c:	00308023          	sb	gp,0(ra)

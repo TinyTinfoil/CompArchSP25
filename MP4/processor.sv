@@ -28,6 +28,7 @@ logic [31:0] mem_write_address;
 logic [31:0] mem_write_data;
 logic [31:0] mem_read_address;
 logic [31:0] mem_read_data;
+logic mem_busy;
 memory #(.INIT_FILE(`CODE)) mem (
     .clk(clk),
     .write_mem(mem_write_enable),
@@ -39,7 +40,8 @@ memory #(.INIT_FILE(`CODE)) mem (
     .led(LED_n),
     .red(RGB_R_n),
     .green(RGB_G_n),
-    .blue(RGB_B_n)
+    .blue(RGB_B_n),
+    .mem_busy(mem_busy)
 );
 
 assign RGB_R = ~RGB_R_n;
@@ -222,7 +224,9 @@ always_ff @(posedge clk) begin
         end
         endcase
         // Increment stage for next clock cycle
-        stage <= stage + 1;
+        if (!mem_busy) begin
+            stage <= stage + 1;
+        end
         if (stage > 4) begin
             stage <= 0; // Reset stage to 0 after completing the cycle
         end
