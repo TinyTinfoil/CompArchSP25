@@ -41,6 +41,7 @@ compile:
 	riscv64-unknown-elf-objcopy -d verilog code/$(code_file).o code/$(code_file).bin --verilog-data-width 4
 	python3 code/pad_memhfile.py code/$(code_file).bin
 	riscv64-unknown-elf-objdump -d code/$(code_file).o > code/$(code_file).dump #for debugging
+	echo \`define CODE \"code/$(code_file).txt\" > memref.sv
 
 sim-post: sim-post-refresh
 	gtkwave tb/$(filename).vcd &

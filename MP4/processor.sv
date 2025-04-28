@@ -3,6 +3,7 @@
 `include "ALU.sv"
 `include "registers.sv"
 `include "compare.sv"
+`include "memref.sv"
 module top (
     input logic clk,
     output logic RGB_R,
@@ -27,8 +28,7 @@ logic [31:0] mem_write_address;
 logic [31:0] mem_write_data;
 logic [31:0] mem_read_address;
 logic [31:0] mem_read_data;
-parameter mem_file = "code/flipbits.txt";
-memory #(.INIT_FILE(mem_file)) mem (
+memory #(.INIT_FILE(`CODE)) mem (
     .clk(clk),
     .write_mem(mem_write_enable),
     .funct3(mem_funct3),
@@ -118,7 +118,6 @@ always_ff @(posedge clk) begin
             PC_next <= PC + 4;
         end
         1: begin
-            //increment PC once
             // Execute
             // load register data to operands
             case (opcode)
@@ -209,12 +208,12 @@ always_ff @(posedge clk) begin
             mem_write_enable <= 1;
         end
         3: begin
+            PC <= PC_next;
             // Update PC and close writes
             //Fetch
             write_enable <= 0;
             mem_write_enable <= 0;
             mem_write_data <= 0;
-            PC <= PC_next;
             mem_write_address <= 0;
             mem_funct3 <= 3'b010;
             mem_read_address <= PC_next;

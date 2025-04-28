@@ -215,12 +215,12 @@ module memory #(
     // Implement PWM control for LED / RGB outputs
     always_ff @(posedge clk) begin
         pwm_counter <= pwm_counter + 1;
+        led <= (pwm_counter < leds[31:24]);
+        red <= (pwm_counter < leds[23:16]);
+        green <= (pwm_counter < leds[15:8]);
+        blue <= (pwm_counter < leds[7:0]);
     end
 
-    assign led = (pwm_counter < leds[31:24]);
-    assign red = (pwm_counter < leds[23:16]);
-    assign green = (pwm_counter < leds[15:8]);
-    assign blue = (pwm_counter < leds[7:0]);
 
     // Implement millis counter
     always_ff @(posedge clk) begin

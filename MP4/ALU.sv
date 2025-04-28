@@ -26,7 +26,7 @@ module ALU (
             3'b111: Result = A & B;                            // AND
             3'b001: Result = A << B[4:0];                      // SLL
             3'b010: Result = ($signed(A) < $signed(B)) ? 32'b1 : 32'b0; // SLT
-            3'b011: Result = (A < B) ? 32'b1 : 32'b0;          // SLTU
+            3'b011: Result = ($unsigned(A) < $unsigned(B)) ? 32'b1 : 32'b0;          // SLTU
             3'b101: Result = (funct7 == 7'h20) && (A[31] == 1) ? ~(~A >> B[4:0]): A >> B[4:0]; // SRA or SRL
             default: Result = 32'b0;                           // Default case
         endcase

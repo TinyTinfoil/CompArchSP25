@@ -11,8 +11,8 @@ module compare(
             3'h1: flag = (A != B); // Not equal
             3'h4: flag = ($signed(A) < $signed(B));  // Less than
             3'h5: flag = ($signed(A) >= $signed(B)); // Greater than or equal to
-            3'h6: flag = (A < B);  // Less than (unsigned)
-            3'h7: flag = (A >= B); // Greater than or equal to (unsigned)
+            3'h6: flag = ($unsigned(A) < $unsigned(B));  // Less than (unsigned)
+            3'h7: flag = ($unsigned(A) >= $unsigned(B)); // Greater than or equal to (unsigned)
             default: flag = 1'b0;    // Default case
         endcase
     end

@@ -20,7 +20,7 @@ module processor_tb;
     end
 
     always begin
-        #4
+        #1
         clk = ~clk;
     end
 

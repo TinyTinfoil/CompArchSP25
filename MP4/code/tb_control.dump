@@ -1,0 +1,31 @@
+
+code/tb_control.o:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <BEQ_I-0x1c>:
+   0:	01e00093          	li	ra,30
+   4:	fec00113          	li	sp,-20
+   8:	01e00193          	li	gp,30
+   c:	fec00213          	li	tp,-20
+  10:	02208463          	beq	ra,sp,38 <ERROR>
+  14:	00308463          	beq	ra,gp,1c <BEQ_I>
+  18:	00200f93          	li	t6,2
+
+0000001c <BEQ_I>:
+  1c:	00410463          	beq	sp,tp,24 <BEQ_S>
+  20:	00200f93          	li	t6,2
+
+00000024 <BEQ_S>:
+  24:	0030ca63          	blt	ra,gp,38 <ERROR>
+  28:	00116863          	bltu	sp,ra,38 <ERROR>
+  2c:	00411663          	bne	sp,tp,38 <ERROR>
+  30:	00109463          	bne	ra,ra,38 <ERROR>
+  34:	0080006f          	j	3c <SUCCESS>
+
+00000038 <ERROR>:
+  38:	00200f93          	li	t6,2
+
+0000003c <SUCCESS>:
+  3c:	00100f13          	li	t5,1
