@@ -205,7 +205,9 @@ always_ff @(posedge clk) begin
                 end
             endcase
             write_enable <= 1;
-            mem_write_enable <= 1;
+            if (opcode == 7'b0100011) begin
+                mem_write_enable <= 1;
+            end
         end
         3: begin
             PC <= PC_next;
@@ -221,7 +223,7 @@ always_ff @(posedge clk) begin
         endcase
         // Increment stage for next clock cycle
         stage <= stage + 1;
-        if (stage >= 4) begin
+        if (stage > 4) begin
             stage <= 0; // Reset stage to 0 after completing the cycle
         end
 end

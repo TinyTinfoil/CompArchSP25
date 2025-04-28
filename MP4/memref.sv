@@ -1,1 +1,1 @@
-`define CODE "code/code.txt"
+`define CODE "code/blink.txt"

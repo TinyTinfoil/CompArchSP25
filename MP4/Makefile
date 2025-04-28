@@ -53,4 +53,4 @@ sim-post-refresh:
 	mv $(filename).vcd tb/$(filename).vcd
 
 pnr-gui:
-	nextpnr-ice40 --json $(filename).json --pcf $(pcf_file) --asc $(filename).asc --gui
+	nextpnr-ice40 --json $(filename).json --pcf $(pcf_file) --asc $(filename).asc --up5k --package sg48 --gui

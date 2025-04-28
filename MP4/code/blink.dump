@@ -1,0 +1,35 @@
+
+code/blink.o:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <main>:
+   0:	fe010113          	addi	sp,sp,-32
+   4:	00812e23          	sw	s0,28(sp)
+   8:	02010413          	addi	s0,sp,32
+   c:	ffe00793          	li	a5,-2
+  10:	fef42423          	sw	a5,-24(s0)
+  14:	ff800793          	li	a5,-8
+  18:	fef42223          	sw	a5,-28(s0)
+  1c:	0c800793          	li	a5,200
+  20:	fef42023          	sw	a5,-32(s0)
+  24:	fe042623          	sw	zero,-20(s0)
+
+00000028 <.L3>:
+  28:	fe442783          	lw	a5,-28(s0)
+  2c:	0007a703          	lw	a4,0(a5)
+  30:	fec42783          	lw	a5,-20(s0)
+  34:	40f70733          	sub	a4,a4,a5
+  38:	fe042783          	lw	a5,-32(s0)
+  3c:	fee7f6e3          	bgeu	a5,a4,28 <.L3>
+  40:	fe442783          	lw	a5,-28(s0)
+  44:	0007a783          	lw	a5,0(a5)
+  48:	fef42623          	sw	a5,-20(s0)
+  4c:	fe842783          	lw	a5,-24(s0)
+  50:	0007c783          	lbu	a5,0(a5)
+  54:	03c78793          	addi	a5,a5,60
+  58:	0ff7f713          	zext.b	a4,a5
+  5c:	fe842783          	lw	a5,-24(s0)
+  60:	00e78023          	sb	a4,0(a5)
+  64:	fc5ff06f          	j	28 <.L3>
