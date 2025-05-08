@@ -37,7 +37,7 @@ code = code.c
 code_file = $(notdir $(basename $(code)))
 
 compile:
-	riscv64-unknown-elf-gcc -march=rv32i -mabi=ilp32 -nostartfiles -o code/$(code_file).o -c code/$(code) -T $(filename).ld -Bstatic -ffreestanding
+	riscv64-unknown-elf-gcc -march=rv32i -mabi=ilp32 -o code/$(code_file).o -c code/$(code) # -T $(filename).ld -Bstatic
 	riscv64-unknown-elf-objcopy -d verilog code/$(code_file).o code/$(code_file).bin --verilog-data-width 4
 	python3 code/pad_memhfile.py code/$(code_file).bin
 	riscv64-unknown-elf-objdump -d code/$(code_file).o > code/$(code_file).dump #for debugging

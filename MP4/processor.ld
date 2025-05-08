@@ -11,3 +11,5 @@ SECTIONS
         *(.*)
     } >BRAM
 }
+/* https://zipcpu.com/zipcpu/2018/12/22/autofpga-ld.html */
+/* https://stackoverflow.com/questions/77892754/linker-script-for-riscv-cpu-on-fpga-stack-is-not-where-i-expect-it-to-be */

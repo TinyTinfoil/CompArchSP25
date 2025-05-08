@@ -1,10 +1,10 @@
 // RV32I memory module
 //
 // Implements 8kB of actual memory in the address range of 0x00000000 to
-// 0x00001FFF, which can be written to or read from in words (4 bytes), 
+// 0x000007FF, which can be written to or read from in words (4 bytes), 
 // half words (2 bytes), or single bytes. Word accesses are aligned to four-byte 
 // boundaries, and half-word access are aligned to two-byte boundaries.
-// Half-word and sigle-byte reads are either sign extended or zero extended to 
+// Half-word and single-byte reads are either sign extended or zero extended to 
 // 32 bits, depending on the msb of funct3. The value of funct3 should be 3'b010 
 // when fetching instructions as it is during execution of lw / sw instructions. 
 // Addresses outside of the physical address space are read as 32'd0. The memory 
@@ -48,7 +48,7 @@ module memory #(
     logic [3:0] micros_counter = 4'd0;
 
     // Declare memory array for 8kB of actual memory
-    (* ram_style = "block" *) logic [31:0] memory [0:2047];
+    (* ram_style = "block" *) logic [31:0] memory [0:2047]; //Max mem addr is 0x7FF
 
     // Declare variables to save the two LSBs of the read address and funct3
     logic read_address0;

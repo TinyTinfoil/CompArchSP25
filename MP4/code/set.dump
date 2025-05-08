@@ -1,0 +1,10 @@
+
+code/set.o:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <.text>:
+   0:	ffc00213          	li	tp,-4
+   4:	fff00293          	li	t0,-1
+   8:	00520023          	sb	t0,0(tp) # 0 <.text>

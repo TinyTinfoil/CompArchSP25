@@ -1,0 +1,31 @@
+
+code/fade_cycle.o:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <RESET-0x14>:
+   0:	ffc00093          	li	ra,-4
+   4:	ff800113          	li	sp,-8
+   8:	00012183          	lw	gp,0(sp)
+   c:	03c18193          	addi	gp,gp,60
+  10:	00e00393          	li	t2,14
+
+00000014 <RESET>:
+  14:	00300213          	li	tp,3
+  18:	00000293          	li	t0,0
+  1c:	0140006f          	j	30 <INCREMENT>
+
+00000020 <LOOP>:
+  20:	0040a023          	sw	tp,0(ra)
+  24:	00012303          	lw	t1,0(sp)
+  28:	00335463          	bge	t1,gp,30 <INCREMENT>
+  2c:	ff5ff06f          	j	20 <LOOP>
+
+00000030 <INCREMENT>:
+  30:	00128293          	addi	t0,t0,1
+  34:	fe72d0e3          	bge	t0,t2,14 <RESET>
+  38:	00121213          	slli	tp,tp,0x1
+  3c:	00012183          	lw	gp,0(sp)
+  40:	03c18193          	addi	gp,gp,60
+  44:	fddff06f          	j	20 <LOOP>

@@ -23,10 +23,7 @@ module registers (
         if (write_enable && write_addr != 5'd0) begin
             registers[write_addr] <= write_data;
         end
-        // Ensure register 0 is always 0
-        if (write_addr == 5'd0) begin
-            registers[write_addr] = 32'd0;
-        end
+        registers[0] = 32'd0;
     end
     always_comb begin
         // Read logic
@@ -35,6 +32,8 @@ module registers (
     end
     
 //For iverilog in order to see the registers in gtkwave
+logic [31:0] reg0;
+assign reg0 = registers[0];
 logic [31:0] reg1;
 assign reg1 = registers[1];
 logic [31:0] reg2;
